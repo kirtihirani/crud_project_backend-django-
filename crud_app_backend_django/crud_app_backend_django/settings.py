@@ -80,8 +80,14 @@ WSGI_APPLICATION = "crud_app_backend_django.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "myTestDB",
+        "USER":"postgres",
+        "PASSWORD":"root",
+        "HOST":"localhost",
+        "PORT":"5432"
+
+
     }
 }
 
