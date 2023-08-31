@@ -38,6 +38,36 @@ def departmentApi(request, id=0):
             dsrl.save()
             return JsonResponse("updated successfully",safe=False) 
          return JsonResponse("failed to update",safe=False) 
-     
 
-    
+@csrf_exempt
+def employeeApi(request,id=0):
+    if request.method=='GET':
+        if(id==0):
+            emp = Employees.objects.all()
+            emp_srl = EmployeeSerializer(emp,many=True)
+            return JsonResponse(emp_srl.data,safe=False)
+        else:
+            emp = Employees.objects.get(EmployeeId = id)
+            emp_srl = EmployeeSerializer(emp)
+            return JsonResponse(emp_srl.data,safe=False)
+    elif request.method=='POST':
+        emp_data = JSONParser().parse(request)
+        emp_srl  = EmployeeSerializer(data= emp_data)
+        if emp_srl.is_valid():
+            emp_srl.save()
+            return JsonResponse("data added successfully" , safe=False)
+        else:
+             return JsonResponse("data addition failed" , safe=False)
+
+    elif request.method=='DELETE':
+        emp = Employees.objects.get(EmployeeId = id)
+        emp.delete()
+        return JsonResponse("deleted successfully",safe=False)
+    elif request.method=='PUT':
+         dept = Employees.objects.get(DepartmentId=id)
+         deptData = JSONParser().parse(request) 
+         dsrl = EmployeeSerializer(dept,data = deptData)
+         if dsrl.is_valid():
+            dsrl.save()
+            return JsonResponse("updated successfully",safe=False) 
+         return JsonResponse("failed to update",safe=False) 
