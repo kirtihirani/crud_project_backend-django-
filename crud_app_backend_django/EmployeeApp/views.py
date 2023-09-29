@@ -1,9 +1,13 @@
 from django.shortcuts import render
+import pyclamd
 from rest_framework.parsers import JSONParser
+from rest_framework.views import APIView
+from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
 from django.http.response import JsonResponse
 from EmployeeApp.models import Departments,Employees
 from EmployeeApp.serializers import DepartmentSerializer,EmployeeSerializer
+
 # from django.core.files.storage
 
 # Create your views here.
@@ -71,3 +75,41 @@ def employeeApi(request,id=0):
             dsrl.save()
             return JsonResponse("updated successfully",safe=False) 
          return JsonResponse("failed to update",safe=False) 
+    
+class UploadView(APIView):
+    def post(self,request):
+        # file = request.data.get('file', None)
+        infected_files =[]
+        up_file = request.FILES['file']
+        
+        try:
+            cd = pyclamd.ClamdUnixSocket()
+        except pyclamd.ConnectionError:
+            return JsonResponse({'status':'Error','message':'could not connect to clamav scanner'})
+        
+        if up_file:
+            file_content = up_file.read()
+            scan_result = cd.scan_stream(file_content)
+        
+            if scan_result is not None:
+                if scan_result['stream']:
+                    return JsonResponse({'status':'infected','message':f'file is infected with {scan_result["stream"]}'})
+                else:
+                    return JsonResponse({'status':'clean','message':'file is clean'})
+            else:
+                return JsonResponse({'status':'error','message':'scan failed'})
+            
+        else:
+            return JsonResponse({'message':'file not uploaded'})
+       
+        # destination = open('/Users/kirtihirani/' + up_file.name, 'wb+')
+        # for chunk in up_file.chunks():
+        #     destination.write(chunk)
+        # destination.close() 
+        print(up_file)
+        # if up_file:
+        #     return Response({"message":"file has received"}, status=200)
+        # else:
+        #     return Response({"message":"file not received"}, status=400)
+    
+# /Users/kirtihirani
